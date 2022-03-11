@@ -94,39 +94,25 @@ $id = $_REQUEST["id"];
                                                 <!-- /.input group -->
                                             </div>
                                         </div>
-                                        <div class="col-6">
-                                            <label>Cuota a pagar</label>
-                                            <select name="cuota" id="cuota" class="form-control" required>                                                
-                                                <option selected="selected" value="">-- SELECCIONE UNA OPCION --</option>
-                                                <?php
-                                                    $sql2 = "SELECT cuota, pago FROM cuenta_corriente WHERE pago=0 and activo=1 and id_persona=$id";
-                                                    $existe2 = $mysqli->query($sql2);
-                                                    while ($row2 = $existe2->fetch_array(MYSQLI_ASSOC)){
-                                                        ?>
-                                                        <option value=<?php echo $row2['cuota'] ?>>CUOTA <?php echo $row2['cuota'] ?> IMPAGA</option>
-                                                        <?php 
-                                                    }
-                                                ?>
-                                            </select>
-                                        </div>
-                                        <div class="col-4">
-                                            <label>Monto</label>
-                                            <input type="number" id="monto" name="monto" class="form-control"   placeholder="Monto" required>
-                                        </div>
                                         <div class="col-4">
                                             <label>Tipo</label>
-                                            <select name="tipo" id="tipo" name="tipo" class="form-control" required>
+                                            <select name="tipo" id="tipo" name="tipo" class="form-control" required onchange="mostrar()">
                                                 <?php
                                                 /* $firma = $conexion_resol->prepare("SELECT * FROM RESOLUCIONES.dbo.firmante ORDER BY FIRMANTE_DESC");
                                                 $firma->execute();
                                                 while ($res_firma = $firma->fetch()) { */
                                                 ?>
                                                 <option selected="selected" value="">-- SELECCIONE UNA OPCION --</option>
-                                                <option value="1" style="text-transform:uppercase;">FICHA</option>
+                                                <option value="1" style="text-transform:uppercase;">MATRICULA</option>
                                                 <option value="2" style="text-transform:uppercase;">CUOTA</option>
+                                                <option value="3" style="text-transform:uppercase;">HORA</option>
                                                 <?php // } ?>
                                             </select>   
                                         </div>
+                                        <div class="col-4">
+                                            <label>Monto</label>
+                                            <input type="number" id="monto" name="monto" class="form-control"   placeholder="Monto" required>
+                                        </div>  
                                         <div class="col-4">
                                             <label>Forma de Pago</label>
                                             <select name="medio" id="medio" name="medio" class="form-control" required>
@@ -142,6 +128,54 @@ $id = $_REQUEST["id"];
                                                 ?>
                                             </select>
                                         </div>
+                                        <div class="col-6" id="cuotas" hidden>
+                                            <label>Cuota a pagar</label>
+                                            <select name="cuota" id="cuota" class="form-control" required>                                                
+                                                <option selected="selected" value="">-- SELECCIONE UNA OPCION --</option>
+                                                <?php
+                                                    $fecha = (int)date("Y");
+                                                    $sql2 = "SELECT cuota, pago FROM cuenta_corriente WHERE pago=0 and activo=1 and id_persona=$id and anio=$fecha and cuota!=0";
+                                                    $existe2 = $mysqli->query($sql2);
+                                                    while ($row2 = $existe2->fetch_array(MYSQLI_ASSOC)){
+                                                        ?>
+                                                        <option value=<?php echo $row2['cuota'] ?>>CUOTA <?php echo $row2['cuota'] ?> IMPAGA</option>
+                                                        <?php 
+                                                    }
+                                                ?>
+                                            </select>
+                                        </div>
+                                        <div class="col-6" id="matriculas" hidden>
+                                            <label>Matricula a pagar</label>
+                                            <select name="matricula" id="matricula" class="form-control" required>                                                
+                                                <option selected="selected" value="">-- SELECCIONE UNA OPCION --</option>
+                                                <?php
+                                                    $fecha = (int)date("Y");
+                                                    $sql2 = "SELECT cuota, pago FROM cuenta_corriente WHERE pago=0 and activo=1 and id_persona=$id and anio=$fecha and cuota=0";
+                                                    $existe2 = $mysqli->query($sql2);
+                                                    while ($row2 = $existe2->fetch_array(MYSQLI_ASSOC)){
+                                                        ?>
+                                                        <option value=<?php echo $row2['cuota'] ?>>CUOTA <?php echo $row2['cuota'] ?> IMPAGA</option>
+                                                        <?php 
+                                                    }
+                                                ?>
+                                            </select>
+                                        </div>
+                                        <div class="col-6" id="clases" hidden>
+                                            <div class="form-group">
+                                                <label>Fecha de Clase:</label>
+                                                <div class="input-group">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text"><i class="far fa-calendar-alt"></i></span>
+                                                    </div>
+                                                    <input type="text" class="form-control" data-inputmask-alias="datetime" data-inputmask-inputformat="dd/mm/yyyy" data-mask="" im-insert="false" id="datemask1" name="clase" required>
+                                                </div>
+                                                <!-- /.input group -->
+                                            </div>
+                                        </div>
+                                        <div class="col-4" id="horas" hidden>
+                                            <label>Cantidad horas</label>
+                                            <input type="number" id="hora" name="hora" class="form-control"   placeholder="Horas" required>
+                                        </div> 
                                         <div class="col-12">
                                             <div class="card-body">
                                                 <div class="row">
@@ -238,6 +272,38 @@ $id = $_REQUEST["id"];
         </script>
         <script>
 
+            function mostrar(){
+                valor = document.getElementById("tipo").value;
+                if(valor == 1){
+                    document.getElementById("matriculas").removeAttribute("hidden");
+                    document.getElementById("matricula").setAttribute("required", true);
+                    document.getElementById("cuotas").setAttribute("hidden", true);
+                    document.getElementById("cuota").removeAttribute("required");
+                    document.getElementById("clases").setAttribute("hidden", true);
+                    document.getElementById("datemask1").removeAttribute("required");
+                    document.getElementById("horas").setAttribute("hidden", true);
+                    document.getElementById("hora").removeAttribute("required");
+                }else if(valor == 2){
+                    document.getElementById("cuotas").removeAttribute("hidden");
+                    document.getElementById("cuota").setAttribute("required", true);
+                    document.getElementById("matriculas").setAttribute("hidden", true);
+                    document.getElementById("matricula").removeAttribute("required");
+                    document.getElementById("clases").setAttribute("hidden", true);
+                    document.getElementById("datemask1").removeAttribute("required");
+                    document.getElementById("horas").setAttribute("hidden", true);
+                    document.getElementById("hora").removeAttribute("required");
+                }else if(valor == 3){
+                    document.getElementById("clases").removeAttribute("hidden");
+                    document.getElementById("datemask1").setAttribute("required", true);
+                    document.getElementById("horas").removeAttribute("hidden");
+                    document.getElementById("hora").setAttribute("required", true);
+                    document.getElementById("matriculas").setAttribute("hidden", true);
+                    document.getElementById("matricula").removeAttribute("required");
+                    document.getElementById("cuotas").setAttribute("hidden", true);
+                    document.getElementById("cuota").removeAttribute("required");
+                }
+            }
+
             function enviar_ajax() {
                 $.ajax({
                     type: "POST",
@@ -246,7 +312,8 @@ $id = $_REQUEST["id"];
                     success: function(data) {
                         alert("Datos Guardados!!!");
                         alert(data);
-                        window.location = "alumnos.php";
+                        //window.location = "alumnos.php";
+                        location.reload();
                     }
                 });  
         }

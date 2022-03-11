@@ -172,7 +172,7 @@
                     <a href="historial_pagos.php" class="nav-link">
                         <i class="nav-icon fas fa-th"></i>
                         <p>
-                            Cobros
+                            Pagos
                         </p>
                     </a>
                 </li>
@@ -185,13 +185,27 @@
                     </a>
                 </li>
 
-                <li class="nav-item">
-                    <a href="resumen.php" class="nav-link">
+                <li class="nav-item has-treeview">
+                    <a href="#" class="nav-link">
                         <i class="nav-icon fas fa-th"></i>
                         <p>
                             Resumen
+                            <i class="fas fa-angle-left right"></i>
                         </p>
                     </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="resumen.php" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Resumen mensual</p>
+                            </a>
+                            <a href="resumen_fecha.php" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Resumen por fecha</p>
+                            </a>
+                        </li>
+                        
+                    </ul>
                 </li>
                 <li class="nav-item">
                     <a href="listados_gral.php" class="nav-link">
@@ -201,6 +215,12 @@
                         </p>
                     </a>
                 </li>
+                <li>
+                    <a href="acciones.php?valor=19&accion=backup"><button type="button" class="btn btn-block btn-warning">Backup</button></a>
+                </li>
+                <!--<li>
+                    <a href="acciones.php?valor=20&accion=cuotas"><button type="button" class="btn btn-block btn-primary">Cuotas</button></a>
+                </li>-->
             </ul>
         </nav>
         <!-- /.sidebar-menu -->

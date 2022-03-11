@@ -170,6 +170,58 @@ if ($_SESSION["aprobado"] != "SI") {
                             </div>
                         </div>
                     </div>
+                    <div class="col-md-6">
+                        <div class="card card-info">
+                            <div class="card-header">
+                                <h3 class="card-title">Listado de pagos de alumno</h3>
+                            </div>
+                            <div class="card-body" style="display: block;">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <div class="form-group">
+                                            <div class="form-group">
+                                              <label for="">Cuota/Matricula</label>
+                                              <select class="form-control" name="tipoP" id="tipoP" onchange="mostCuota()">
+                                                <option selected="selected" value="">-- SELECCIONE UN TIPO --</option>
+                                                <option value="1">Cuota</option>
+                                                <option value="2">Matricula</option>
+                                              </select>
+                                            </div>
+                                            <div class="form-group" id="NumCuota" hidden>
+                                              <label for="">Numero cuota</label>
+                                              <select class="form-control" name="Ncuota" id="Ncuota">
+                                                <option selected="selected" value="">-- SELECCIONE LA CUOTA --</option>
+                                                <option value="2">Cuota 2</option>
+                                                <option value="3">Cuota 3</option>
+                                                <option value="4">Cuota 4</option>
+                                                <option value="5">Cuota 5</option>
+                                                <option value="6">Cuota 6</option>
+                                                <option value="7">Cuota 7</option>
+                                                <option value="8">Cuota 8</option>
+                                                <option value="9">Cuota 9</option>
+                                                <option value="10">Cuota 10</option>
+                                                <option value="11">Cuota 11</option>
+                                                <option value="12">Cuota 12</option>
+                                              </select>
+                                            </div>
+                                            <input type="radio" name="optionsRadios2" id="optionsRadiosPagos" value="option1" checked>Pago
+                                            <br>
+                                            <input type="radio" name="optionsRadios2" id="optionsRadiosImpagos" value="option2">Impago
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-3">
+                                                    <input type="button" class="btn btn-block btn-success" name="imp" id="imp" value="Imprimir" onclick="pagos('optionsRadiosPagos')"></a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
         </div>
@@ -296,6 +348,17 @@ if ($_SESSION["aprobado"] != "SI") {
             window.location = 'imp_cobros.php?rango=' + rango.value;
         }
 
+        function mostCuota(){
+            tipo = document.getElementById("tipoP").value;
+            if(tipo == 1){
+                document.getElementById("NumCuota").removeAttribute("hidden");
+                document.getElementById("NumCuota").setAttribute("required", true);
+            }else{
+                document.getElementById("NumCuota").removeAttribute("required");
+                document.getElementById("NumCuota").setAttribute("hidden", true);
+            }
+        }
+
         function alumnos(check) {
             check = check;
             element = document.getElementById(check);
@@ -312,6 +375,22 @@ if ($_SESSION["aprobado"] != "SI") {
                 alert("no selecciono una opcion");
             }else{
                 window.location = 'imp_cursos.php?curso=' + curso.value;
+            }
+        }
+
+        function pagos(check){
+            check = check;
+            element = document.getElementById(check);
+            sel = document.getElementById('tipoP').value;
+            if(sel == 1){
+                cuota = document.getElementById("Ncuota").value;
+            }else{
+                cuota = 0;
+            }
+            if (element.checked) {
+                window.location = 'imp_pagos_impagos.php?tipo=pago&tipoP=' + sel + "&cuota=" + cuota;
+            } else {
+                window.location = 'imp_pagos_impagos.php?tipo=impago&tipoP=' + sel + "&cuota=" + cuota;
             }
         }
     </script>

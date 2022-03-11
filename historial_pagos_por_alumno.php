@@ -81,7 +81,7 @@ $id = $_REQUEST['id'];
                                         </thead>
                                         <tbody>
                                             <?php
-                                            $sql = "SELECT CONCAT(a.nombre, ' ', a.apellido) AS nomYap, a.dni, cc.monto, cc.cuota, p.fecha, mp.medio_pago, cc.id_cc FROM alumnos a INNER JOIN cuenta_corriente cc ON (a.id_personas = cc.id_persona)
+                                            $sql = "SELECT CONCAT(a.nombre, ' ', a.apellido) AS nomYap, a.dni, cc.monto, cc.cuota, p.fecha, mp.medio_pago, cc.id_cc, p.fecha_clase FROM alumnos a INNER JOIN cuenta_corriente cc ON (a.id_personas = cc.id_persona)
                                             INNER JOIN pagos p ON (cc.id_cc = p.id_cc)
                                             INNER JOIN medios_pago mp ON (mp.id_medio = p.medio) WHERE a.id_personas = $id and cc.pago = 1 order by cc.cuota";
                                             $res_existe = $mysqli->query($sql);
@@ -97,7 +97,21 @@ $id = $_REQUEST['id'];
                                                     <td style="text-align: left;"> <?php echo $row['nomYap'] ?></td>
                                                     <td style="text-align: center;"> <?php echo $row["dni"] ?></td>
                                                     <td style="text-align: center;"> <?php echo $row["monto"] ?></td>
-                                                    <td style="text-align: center;"> <?php echo "CUOTA" . " " . $row["cuota"] ?></td>
+                                                    <?php 
+                                                        if($row["cuota"] == 0){
+                                                            ?>
+                                                            <td style="text-align: center;">Matricula</td>
+                                                            <?php
+                                                        }elseif($row["cuota"] != 0){
+                                                            if($row["cuota"] == 999){?>
+                                                                <td style="text-align: center;">PAGO DE HORAS DEL <?php echo $row["fecha_clase"] ?></td>
+                                                                <?php 
+                                                            }else{?>
+                                                                <td style="text-align: center;"> <?php echo "CUOTA" . " " . $row["cuota"] ?></td>
+                                                                <?php 
+                                                            }
+                                                        }
+                                                    ?>
                                                     <td style="text-align: center;"> <?php echo $row["medio_pago"] ?></td>
                                                     <td style="text-align: center;"> <?php echo $row["fecha"] ?></td>
                                                     <td style="text-align: center;"><a href="imp_recibos.php?id=<?php echo $row['id_cc']; ?>"><i class="fa fa-list-alt" style="font-size: 25px;;cursor:pointer;"></i></a></td>

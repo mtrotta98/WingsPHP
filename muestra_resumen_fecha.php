@@ -1,27 +1,26 @@
 <?php
-session_start();
 
-if ($_SESSION["aprobado"] != "SI") {
-    ?>
-    <script>
-        location.href = "index.php";
-    </script>
-    <?php
-}
+function mostrar_resumen($rango){
 
 include 'conecta.php';
+$div = explode(' - ', $rango);
 
-$anio = date('Y');
+$f1= $div[0];
+$f2= $div[1];
+
+$f1 = date('Y-m-d',strtotime($f1));
+$f2 = date('Y-m-d',strtotime($f2));
+
 $ingresos = "SELECT sum(cc.monto) as total from pagos p
                             LEFT JOIN cuenta_corriente cc on p.id_cc=cc.id_cc
-                            WHERE cc.pago=1 and MONTH(p.fecha)=MONTH(NOW()) and cc.anio=$anio";
+                            WHERE cc.pago=1 and p.fecha between '$f1' and '$f2' ";
 
 $existe = $mysqli->query($ingresos);
 
 $ing = $existe->fetch_array(MYSQLI_ASSOC);
 
-$egreso = 'SELECT sum(monto) as total from gastos
-                            WHERE activo=1 and MONTH(fecha)=MONTH(NOW())';
+$egreso = "SELECT sum(monto) as total from gastos
+                            WHERE activo=1 and gastos.fecha between '$f1' and '$f2'";
 
 $existe1 = $mysqli->query($egreso);
 
@@ -72,9 +71,12 @@ $res = $ing["total"] - $eg["total"];
                 <div class="content-header">
                     <div class="container-fluid">
                         <div class="row mb-2">
-                            <div class="col-sm-6">
+                            <div class="col-sm-4">
                                 <h1 class="m-0 text-dark">Resumen Ingresos y Egresos</h1>
-                            </div>  
+                            </div> 
+                        </div>
+                        <div class="col-sm-2">
+                                <input type="text" id="rango" name="rango" class="form-control" placeholder="Rango" readonly="readonly" value='<?php echo $rango ?>'> 
                         </div>
                     </div>
                 </div>
@@ -124,7 +126,6 @@ $res = $ing["total"] - $eg["total"];
                                     </div>
                                 </div>
                             </div>
-
                             <!---===============DATOS DE GASTOS======================--->
                             <div class="col-md-6">
                                 <div class="box-body">
@@ -142,19 +143,18 @@ $res = $ing["total"] - $eg["total"];
                                         </thead>
                                         <tbody>
                                             <?php
-                                            $anio = date('Y');
                                             $sql = "SELECT
                                             DATE_FORMAT(p.fecha,'%d/%m/%Y')
-                                            AS fecha,  
-                                            CASE WHEN (cuota > 0 and cuota < 13) THEN CONCAT( apellido, ' ',nombre, ' CUOTA ', cuota) WHEN (cuota = 0) THEN CONCAT( apellido, ' ',nombre, ' MATRICULA ') ELSE CONCAT( apellido, ' ',nombre, ' PAGO DE HORAS ') END AS nombre
-                                            , cc.monto, a.id_personas, cc.id_cc, p.id_pago, p.cant_horas
+                                            AS fecha, 
+											CASE WHEN (cuota > 0 and cuota < 13) THEN CONCAT( apellido, ' ',nombre, ' CUOTA ', cuota) WHEN (cuota = 0) THEN CONCAT( apellido, ' ',nombre, ' MATRICULA ') ELSE CONCAT( apellido, ' ',nombre, ' PAGO DE HORAS ') END AS nombre, 
+											cc.monto, a.id_personas, cc.id_cc, p.id_pago, p.cant_horas
                                             FROM
                                             pagos p
                                             LEFT JOIN cuenta_corriente cc ON p.id_cc = cc.id_cc 
                                             LEFT JOIN alumnos a on cc.id_persona=a.id_personas
                                             WHERE
                                             cc.pago = 1 
-                                            AND MONTH ( p.fecha ) = MONTH ( NOW( ) ) and cc.anio=$anio  ORDER BY cc.cuota";
+                                            AND p.fecha between '$f1' and '$f2' ORDER BY cc.cuota";
                                             
                                             $res_existe = $mysqli->query($sql);
                                             $i = 0;
@@ -211,7 +211,7 @@ $res = $ing["total"] - $eg["total"];
                                             gastos 
                                             WHERE
                                             activo = 1 
-                                            AND MONTH ( fecha ) = MONTH ( NOW( ) )";
+                                            AND gastos.fecha between '$f1' and '$f2'";
                                             //$res_existe = mysqli_query($conexion, $sql);
                                             $res_existe = $mysqli->query($sql);
                                             $i = 0;
@@ -320,7 +320,9 @@ $res = $ing["total"] - $eg["total"];
                 var id = id;
                 var id2 = id2;
                 var id3 = id3;
-                window.location = "edita_pagos.php?id=" + id + "&id2=" + id2 + "&id3=" + id3
+                var rango = document.getElementById('rango').value;
+                localStorage.setItem("rango", rango);
+                window.location = "edita_pagos.php?id=" + id + "&id2=" + id2 + "&id3=" + id3 + "&rango=" + rango
             }
 
             function borra(id, id2, id3) {
@@ -361,7 +363,9 @@ $res = $ing["total"] - $eg["total"];
 
             function edita_gasto(id){
                 var id = id;
-                window.location = "edita_gastos.php?id=" + id
+                var rango = document.getElementById('rango').value;
+                localStorage.setItem("rango", rango);
+                window.location = "edita_gastos.php?rango=" + rango + "&id=" + id
             }
 
             function borra_gasto(id){
@@ -398,3 +402,4 @@ $res = $ing["total"] - $eg["total"];
 
     </body>
 </html>
+<?php } ?>

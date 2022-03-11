@@ -4,7 +4,6 @@ include 'conecta.php';
 $id = $_REQUEST["id"];
 $id2 = $_REQUEST["id2"];
 $id3 = $_REQUEST["id3"];
-
 ?>
 <!DOCTYPE html>
 <html>
@@ -61,7 +60,7 @@ $id3 = $_REQUEST["id3"];
                         <div class="col-md-12">
                             <div class="card card-info">
                                 <?php 
-                                    $sql = "SELECT a.nombre, a.apellido, cc.monto, p.fecha, mp.medio_pago FROM alumnos a INNER JOIN cuenta_corriente cc ON (a.id_personas = cc.id_persona)
+                                    $sql = "SELECT a.nombre, a.apellido, cc.monto, p.fecha, mp.medio_pago, p.fecha_clase, p.cant_horas FROM alumnos a INNER JOIN cuenta_corriente cc ON (a.id_personas = cc.id_persona)
                                     INNER JOIN pagos p ON (cc.id_cc = p.id_cc)
                                     INNER JOIN medios_pago mp ON (mp.id_medio = p.medio) WHERE a.id_personas = $id and cc.id_cc=$id2 and p.id_pago=$id3";
                                     $existe = $mysqli->query($sql);
@@ -106,14 +105,25 @@ $id3 = $_REQUEST["id3"];
                                         </div>
                                         <div class="col-6">
                                             <label>Cuota a pagar</label>
-                                            <select name="cuota" id="cuota" class="form-control" required>                                                
+                                            <select name="cuota" id="cuota" class="form-control" required onchange="mostrar()">                                                
                                                 <option selected="selected" value="">-- SELECCIONE UNA OPCION --</option>
                                                 <?php
-                                                    $sql2 = "SELECT cuota, pago FROM cuenta_corriente WHERE pago=1 and id_persona=$id and id_cc=$id2";
+                                                    $sql2 = "SELECT cc.cuota, cc.pago, p.cant_horas FROM cuenta_corriente cc INNER JOIN pagos p ON (cc.id_cc = p.id_cc) WHERE cc.pago=1 and cc.id_persona=$id and cc.id_cc=$id2";
                                                     $existe2 = $mysqli->query($sql2);
                                                     while ($row2 = $existe2->fetch_array(MYSQLI_ASSOC)){
+                                                        if($row2["cuota"] == 0){?>
+                                                            <option value=<?php echo $row2['cuota'] ?>>MATRICULA PAGA</option>
+                                                            <?php
+                                                        }elseif($row2["cuota"] != 0){
+                                                            if($row2["cuota"] < 13){?>
+                                                                <option value=<?php echo $row2['cuota'] ?>>CUOTA <?php echo $row2["cuota"] ?>PAGA</option>
+                                                                <?php
+                                                            }else{?>
+                                                                <option value=<?php echo $row2['cuota'] ?>>PAGO DE <?php echo $row2["cant_horas"] ?>HORAS</option>
+                                                                <?php
+                                                            }
+                                                        }  
                                                         ?>
-                                                        <option value=<?php echo $row2['cuota'] ?>>CUOTA <?php echo $row2['cuota'] ?> PAGA</option>
                                                         <?php 
                                                     }
                                                 ?>
@@ -132,8 +142,9 @@ $id3 = $_REQUEST["id3"];
                                                 while ($res_firma = $firma->fetch()) { */
                                                 ?>
                                                 <option selected="selected" value="">-- SELECCIONE UNA OPCION --</option>
-                                                <option value="1" style="text-transform:uppercase;">FICHA</option>
-                                                <option value="2" style="text-transform:uppercase;">CUOTA</option>
+                                                <option value="1" style="text-transform:uppercase;" id="ficha" hidden>FICHA</option>
+                                                <option value="2" style="text-transform:uppercase;" id="cuotas" hidden>CUOTA</option>
+                                                <option value="3" style="text-transform:uppercase;" id="hora" hidden>HORAS</option>
                                                 <?php // } ?>
                                             </select>   
                                         </div>
@@ -151,6 +162,22 @@ $id3 = $_REQUEST["id3"];
                                                 <option value="3" style="text-transform:uppercase;">MERCADO PAGO</option>
                                                 <?php // } ?>
                                             </select>
+                                        </div>
+                                        <div class="col-4" id="fecha" hidden>
+                                            <div class="form-group">
+                                                <label>Fecha de clase:</label>
+                                                <div class="input-group">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text"><i class="far fa-calendar-alt"></i></span>
+                                                    </div>
+                                                    <input type="text" class="form-control" data-inputmask-alias="datetime" data-inputmask-inputformat="dd/mm/yyyy" data-mask="" im-insert="false" id="datemask1" name="fechaClase" value='<?php echo $row['fecha_clase'] ?>' required>
+                                                </div>
+                                                <!-- /.input group -->
+                                            </div>
+                                        </div>
+                                        <div class="col-4" id="cant_hora" hidden>
+                                            <label>Cantidad de horas</label>
+                                            <input type="number" id="cant_horas" name="cant_horas" class="form-control"  placeholder="Cantidad Horas" value='<?php echo $row['cant_horas'] ?>' required>
                                         </div>
                                         <div class="col-12">
                                             <div class="card-body">
@@ -243,6 +270,7 @@ $id3 = $_REQUEST["id3"];
 
             })
         </script>
+        <?php if (!isset($_REQUEST['rango'])){ ?>
         <script>
 
             function enviar_ajax() {
@@ -258,6 +286,45 @@ $id3 = $_REQUEST["id3"];
                 });  
             }
 
+        </script>
+        <?php }else{ ?>
+            <script>
+
+                function enviar_ajax() {
+                    var rango = localStorage.getItem("rango");
+                    $.ajax({
+                        type: "POST",
+                        url: "acciones.php?valor=12&accion=actualiza",
+                        data: $("#formulario_edita_pago").serialize(),
+                        success: function(data) {
+                            alert("Datos Guardados!!!");
+                            alert(data);
+                            window.location = 'resumen_fecha.php?rango=' + rango;
+                        }
+                    });  
+                }
+            </script>
+        <?php }?>
+
+        <script>
+            function mostrar(){
+                let valor = document.getElementById("cuota").value
+                if(valor == 0){
+                    document.getElementById("ficha").removeAttribute("hidden")
+                    document.getElementById("datemask1").removeAttribute("required")
+                    document.getElementById("cant_horas").removeAttribute("required")
+                }else if(valor != 0){
+                    if(valor < 13){
+                        document.getElementById("cuotas").removeAttribute("hidden")
+                        document.getElementById("datemask1").removeAttribute("required")
+                        document.getElementById("cant_horas").removeAttribute("required")
+                    }else{
+                        document.getElementById("hora").removeAttribute("hidden")
+                        document.getElementById("fecha").removeAttribute("hidden")
+                        document.getElementById("cant_hora").removeAttribute("hidden")
+                    }
+                }
+            }
         </script>
     </body>
 </html>

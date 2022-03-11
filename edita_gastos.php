@@ -3,6 +3,7 @@ session_start();
 include 'conecta.php';
 
 $id = $_REQUEST['id'];
+$rango = $_REQUEST['rango'];
 ?>
 <!DOCTYPE html>
 <html>
@@ -196,6 +197,7 @@ $id = $_REQUEST['id'];
 
             })
         </script>
+        <?php if (!isset($_REQUEST['rango'])){ ?>
         <script>
 
             function enviar_ajax() {
@@ -211,5 +213,23 @@ $id = $_REQUEST['id'];
                 });  
         }
         </script>
+        <?php }else{ ?>
+            <script>
+
+                function enviar_ajax() {
+                    var rango = localStorage.getItem("rango");
+                    $.ajax({
+                        type: "POST",
+                        url: "acciones.php?valor=14&accion=actualiza",
+                        data: $("#formulario_actualiza_gastos").serialize(),
+                        success: function(data) {
+                            alert("Datos Guardados!!!");
+                            alert(data);
+                            window.location = "resumen_fecha.php?rango=" + rango;
+                        }
+                    });  
+                }
+            </script>
+        <?php }?>
     </body>
 </html>

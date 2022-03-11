@@ -6,7 +6,7 @@ include 'conecta.php';
 
 $id_cc = $_REQUEST["id"];
 // Consulta
-$sql = "SELECT CONCAT(a.nombre, ' ', a.apellido) AS apYnom, p.fecha, cc.cuota, cc.monto, r.nro_recibo, a.dni FROM cuenta_corriente cc LEFT JOIN pagos p ON (cc.id_cc = p.id_cc) LEFT JOIN alumnos a ON (cc.id_persona = a.id_personas) LEFT JOIN recibos r ON (cc.id_cc = r.id_cc) WHERE cc.id_cc = $id_cc";
+$sql = "SELECT CONCAT(a.nombre, ' ', a.apellido) AS apYnom, p.fecha, cc.cuota, cc.monto, r.id_recibo, a.dni, p.fecha_clase, p.cant_horas FROM cuenta_corriente cc LEFT JOIN pagos p ON (cc.id_cc = p.id_cc) LEFT JOIN alumnos a ON (cc.id_persona = a.id_personas) LEFT JOIN recibos r ON (cc.id_cc = r.id_cc) WHERE cc.id_cc = $id_cc";
 $res_existe = $mysqli->query($sql);
 
 if (!$res_existe) {
@@ -30,7 +30,7 @@ $pdf->Ln(30);
 $pdf->setFillColor(232, 232, 232);
 $pdf->setFont('Arial','' ,10);
 $pdf->Cell(30, 6, 'Instituto WINGS', 0, 0, 'L', 0);
-$pdf->Cell(150, 6, 'RECIBO NRO: ' . $row['nro_recibo'], 0, 0, 'R', 0);
+$pdf->Cell(150, 6, 'RECIBO NRO: ' . $row['id_recibo'], 0, 0, 'R', 0);
 $pdf->ln(7);
 $pdf->Cell(30, 6, 'Calle 8 1879, B1894GJK Villa Elisa, Provincia de Buenos Aires', 0, 0, 'L', 0);
 $pdf->Cell(150, 6, 'FECHA: ' . $fecha_carga, 0, 0, 'R', 0);
@@ -47,7 +47,15 @@ $pdf->Cell(40, 6, 'PRECIO UNITARIO', 1, 0, 'L', 1);
 $pdf->Cell(40, 6, 'TOTAL', 1, 0, 'L', 1);
 $pdf->Ln(10);
 $pdf->Cell(30, 6, '1', 1, 0, 'L');
-$pdf->Cell(70, 6, 'Pago de Cuota nro: ' . $row['cuota'], 1, 0, 'C');
+if($row["cuota"] == 0){
+    $pdf->Cell(70, 6, 'Pago de Matricula', 1, 0, 'C');
+}elseif($row["cuota"] != 0){
+    if($row["cuota"] < 13){
+        $pdf->Cell(70, 6, 'Pago de Cuota Nro: ' . $row["cuota"], 1, 0, 'C');
+    }else{
+        $pdf->Cell(70, 6, 'Pago de Horas(' . $row["cant_horas"] . ') del: ' . $row["fecha_clase"], 1, 0, 'C');
+    }
+}
 $pdf->Cell(40, 6, $row['monto'], 1, 0, 'R', 0);
 $pdf->Cell(40, 6, $row['monto'], 1, 0, 'R', 0);
 $pdf->ln(10);

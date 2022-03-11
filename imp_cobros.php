@@ -8,7 +8,7 @@ $div = explode('-', $rango);
 
 
 
-$sql = "SELECT CONCAT(a.nombre, ' ', a.apellido) AS nomYap, a.dni, cc.monto, cc.cuota, p.fecha, mp.medio_pago FROM alumnos a INNER JOIN cuenta_corriente cc ON (a.id_personas = cc.id_persona)
+$sql = "SELECT CONCAT(a.nombre, ' ', a.apellido) AS nomYap, a.dni, cc.monto, cc.cuota, p.fecha, mp.medio_pago, p.cant_horas FROM alumnos a INNER JOIN cuenta_corriente cc ON (a.id_personas = cc.id_persona)
 INNER JOIN pagos p ON (cc.id_cc = p.id_cc)
 INNER JOIN medios_pago mp ON (mp.id_medio = p.medio) WHERE cc.pago = 1 AND (DAY(p.fecha) >= $div[0] and DAY(p.fecha) <= $div[3] and MONTH(p.fecha) >= $div[1] and MONTH(p.fecha) <= $div[4] and YEAR(p.fecha) >= $div[2] and YEAR(p.fecha) <= $div[5])";
 $res_existe = $mysqli->query($sql);
@@ -42,7 +42,15 @@ while ($row = $res_existe->fetch_array(MYSQLI_ASSOC)) {
     $pdf->Cell(20, 6, $i, 1, 0, 'C');
     $pdf->Cell(50, 6, utf8_decode($row['nomYap']), 1, 0, 'L');
     $pdf->Cell(30, 6, utf8_decode($row['monto']), 1, 0, 'R');
-    $pdf->Cell(20, 6, utf8_decode($row['cuota']), 1, 0, 'C');
+    if($row["cuota"] == 0){
+        $pdf->Cell(20, 6, utf8_decode("Matricula"), 1, 0, 'C');
+    }elseif($row["cuota"] != 0){
+        if($row["cuota"] < 13){
+            $pdf->Cell(20, 6, utf8_decode($row['cuota']), 1, 0, 'C');
+        }else{
+            $pdf->Cell(20, 6, utf8_decode("Horas(" . $row["cant_horas"]) . ")", 1, 0, 'C');
+        }
+    }
     $pdf->Cell(50, 6, utf8_decode($fecha), 1, 0, 'C');
     $pdf->Ln(6);
 }
